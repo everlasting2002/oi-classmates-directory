@@ -17,7 +17,7 @@ export default function Layout({ children }: LayoutProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-blue-600">OI同学通讯录</h1>
+              <h1 className="text-2xl font-bold text-blue-600">MSANNUOI</h1>
             </div>
             
             <nav className="flex space-x-2">
@@ -67,7 +67,15 @@ export default function Layout({ children }: LayoutProps) {
       <footer className="bg-white border-t mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <p className="text-center text-sm text-gray-500">
-            © {new Date().getFullYear()} OI同学通讯录 - 为信息学奥林匹克竞赛同学设计
+            © {new Date().getFullYear()} 东北师大附中信息竞赛团队 - MSANNUOI - gzotpa! | 
+            <a 
+              href="https://github.com/everlasting2002/oi-classmates-directory" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline ml-1"
+            >
+              想要修改信息？点击这里访问GitHub仓库
+            </a>
           </p>
         </div>
       </footer>

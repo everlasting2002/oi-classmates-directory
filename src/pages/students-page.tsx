@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useFilter } from '@/contexts/filter-context'
 import { 
   Card, 
   CardContent, 
@@ -17,29 +18,47 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ExternalLink, Search, Eye } from 'lucide-react'
+import { Search, Eye } from 'lucide-react'
 import { 
-  students, 
   getAvatarUrl, 
-  getGraduationYears, 
-  getUniversities, 
-  Student 
+  getUniversities 
 } from '@/data/mock-data'
+import { 
+  students,
+  getGraduationYears, 
+  getCurrentGrade,
+  Student 
+} from '@/data/students-data'
 
 export default function StudentsPage() {
-  const [selectedYear, setSelectedYear] = useState<string>('all')
-  const [selectedUniversity, setSelectedUniversity] = useState<string>('all')
-  const [searchQuery, setSearchQuery] = useState<string>('')
+  const { filterState, updateStudentsFilter } = useFilter()
+  const { selectedYear, selectedUniversity, searchQuery } = filterState.students
   
   const graduationYears = getGraduationYears()
   const universities = getUniversities()
   
-  // 筛选学生数据
+  // 页面加载时恢复状态
+  useEffect(() => {
+    // 状态已经通过Context和URL参数自动恢复，无需额外操作
+  }, [])
+  
+  // 筛选和排序学生数据
   const filteredStudents = useMemo(() => {
-    return students.filter(student => {
+    let filtered = students.filter(student => {
       // 年级筛选
-      if (selectedYear !== 'all' && student.graduationYear !== parseInt(selectedYear)) {
-        return false
+      if (selectedYear !== 'all') {
+        // 处理在校学生年级
+        if (['初一', '初二', '初三', '高一', '高二', '高三'].includes(selectedYear)) {
+          const currentGrade = getCurrentGrade(student.graduationYear)
+          if (currentGrade !== selectedYear) {
+            return false
+          }
+        } else {
+          // 处理毕业年份
+          if (student.graduationYear !== parseInt(selectedYear)) {
+            return false
+          }
+        }
       }
       
       // 大学筛选
@@ -57,6 +76,40 @@ export default function StudentsPage() {
       
       return true
     })
+    
+    // 排序：先按年级排序（越大越前），再按ID排序（从小到大）
+    return filtered.sort((a, b) => {
+      // 获取年级排序值
+      const getGradeValue = (student: Student) => {
+        const currentGrade = getCurrentGrade(student.graduationYear)
+        if (currentGrade) {
+          // 在校学生年级排序值（高三最大，初一最小）
+          const gradeMap: { [key: string]: number } = {
+            '高三': 1000,
+            '高二': 999,
+            '高一': 998,
+            '初三': 997,
+            '初二': 996,
+            '初一': 995
+          }
+          return gradeMap[currentGrade] || 0
+        }
+        // 毕业生按毕业年份排序（年份越小年龄越大，排序值越大）
+        // 使用负数让较早毕业的学生排在前面
+        return student.graduationYear ? (10000 - student.graduationYear) : 0
+      }
+      
+      const gradeA = getGradeValue(a)
+      const gradeB = getGradeValue(b)
+      
+      // 先按年级排序（降序，年级越大越前）
+      if (gradeA !== gradeB) {
+        return gradeB - gradeA
+      }
+      
+      // 年级相同时按ID排序（升序）
+      return a.id - b.id
+    })
   }, [selectedYear, selectedUniversity, searchQuery])
 
   return (
@@ -66,7 +119,7 @@ export default function StudentsPage() {
         
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           {/* 年级筛选 */}
-          <Select value={selectedYear} onValueChange={setSelectedYear}>
+          <Select value={selectedYear} onValueChange={(value: string) => updateStudentsFilter({ selectedYear: value })}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="选择年级" />
             </SelectTrigger>
@@ -74,14 +127,14 @@ export default function StudentsPage() {
               <SelectItem value="all">全部年级</SelectItem>
               {graduationYears.map(year => (
                 <SelectItem key={year} value={year.toString()}>
-                  {year} 届
+                  {typeof year === 'string' ? year : `${year} 届`}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           
           {/* 大学筛选 */}
-          <Select value={selectedUniversity} onValueChange={setSelectedUniversity}>
+          <Select value={selectedUniversity} onValueChange={(value: string) => updateStudentsFilter({ selectedUniversity: value })}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="选择大学" />
             </SelectTrigger>
@@ -101,7 +154,7 @@ export default function StudentsPage() {
             <Input
               placeholder="搜索姓名、昵称或签名"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => updateStudentsFilter({ searchQuery: e.target.value })}
               className="pl-8"
             />
           </div>
@@ -148,7 +201,7 @@ function StudentCard({ student }: { student: Student }) {
               )}
             </h3>
             <Badge variant="outline" className="text-xs">
-              {student.graduationYear} 届
+              {getCurrentGrade(student.graduationYear) || `${student.graduationYear} 届`}
             </Badge>
           </div>
         </div>

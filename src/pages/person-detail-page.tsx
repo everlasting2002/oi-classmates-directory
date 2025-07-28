@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
+import { useFilter } from '@/contexts/filter-context'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -24,9 +25,11 @@ import {
   siCodeforces, 
   siLeetcode,
   siBilibili,
-  siQq
+  siQq,
+  siWechat
 } from 'simple-icons'
 import { students, teachers, awards, getAvatarUrl, Student, Teacher } from '@/data/mock-data'
+import { getStudentAwardLevel } from '@/data/awards-data'
 
 // 个人照片组件
 function PersonPhoto({ photoPath, personName }: { photoPath: string; personName: string }) {
@@ -65,6 +68,28 @@ function PersonPhoto({ photoPath, personName }: { photoPath: string; personName:
 export default function PersonDetailPage() {
   const { type, id } = useParams<{ type: string; id: string }>()
   const navigate = useNavigate()
+  const { getReturnUrl } = useFilter()
+  const [searchParams] = useSearchParams()
+  
+  // 获取来源页面信息
+  const fromPage = searchParams.get('from')
+  const getReturnInfo = () => {
+    if (fromPage === 'awards') {
+      return { page: 'awards' as const, label: '获奖信息' }
+    } else if (fromPage === 'teachers') {
+      return { page: 'teachers' as const, label: '老师列表' }
+    } else {
+      // 默认根据人员类型返回
+      const isStudent = type === 'student'
+      if (isStudent) {
+        return { page: 'students' as const, label: '同学列表' }
+      } else {
+        return { page: 'teachers' as const, label: '老师列表' }
+      }
+    }
+  }
+  
+  const returnInfo = getReturnInfo()
   
   if (!type || !id) {
     return <div>参数错误</div>
@@ -89,7 +114,11 @@ export default function PersonDetailPage() {
   
   // 获取该人员的获奖信息（仅学生）
   const personAwards = isStudent 
-    ? awards.filter(award => award.students.includes(parseInt(id)))
+    ? awards.filter(award => 
+        award.students.gold.includes(parseInt(id)) ||
+        award.students.silver.includes(parseInt(id)) ||
+        award.students.bronze.includes(parseInt(id))
+      )
     : []
   
   // 获取图标
@@ -109,6 +138,7 @@ export default function PersonDetailPage() {
       case 'leetcode': return <SimpleIconSvg icon={siLeetcode} />
       case 'bilibili': return <SimpleIconSvg icon={siBilibili} />
       case 'qq': return <SimpleIconSvg icon={siQq} />
+      case 'wechat': return <SimpleIconSvg icon={siWechat} />
       case 'book': return <Book className="w-4 h-4" />
       case 'code': return <Code className="w-4 h-4" />
       case 'mail': return <Mail className="w-4 h-4" />
@@ -142,11 +172,13 @@ export default function PersonDetailPage() {
       {/* 返回按钮 */}
       <Button 
         variant="ghost" 
-        onClick={() => navigate(-1)}
+        asChild
         className="mb-4"
       >
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        返回{isStudent ? '同学' : '老师'}列表
+        <Link to={getReturnUrl(returnInfo.page as 'students' | 'teachers' | 'awards')}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          返回{returnInfo.label}
+        </Link>
       </Button>
       
       {/* 基本信息卡片 */}
@@ -231,21 +263,23 @@ export default function PersonDetailPage() {
                 <div className="space-y-4">
                   {personAwards
                     .sort((a, b) => b.year - a.year)
-                    .map(award => (
-                      <div key={award.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                          <h4 className="font-medium text-sm">{award.competition}</h4>
-                          <p className="text-xs text-gray-500">{award.year} 年 · {award.season}</p>
-                          {award.date && (
-                            <p className="text-xs text-gray-400">{award.date}</p>
-                          )}
+                    .map(award => {
+                      const level = getStudentAwardLevel(award, parseInt(id))
+                      if (!level) return null
+                      
+                      return (
+                        <div key={award.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div>
+                            <h4 className="font-medium text-sm">{award.competition}</h4>
+                            <p className="text-xs text-gray-500">{award.year} 年 · {award.season}</p>
+                          </div>
+                          <Badge className={`text-white ${getLevelColor(level)}`}>
+                            <span className="mr-1">{getLevelIcon(level)}</span>
+                            {level}
+                          </Badge>
                         </div>
-                        <Badge className={`text-white ${getLevelColor(award.level)}`}>
-                          <span className="mr-1">{getLevelIcon(award.level)}</span>
-                          {award.level}
-                        </Badge>
-                      </div>
-                    ))}
+                      )
+                    })}
                 </div>
               </CardContent>
             </Card>
@@ -268,8 +302,14 @@ export default function PersonDetailPage() {
             <CardContent className="space-y-3">
               <div className="flex items-center space-x-3">
                 {getIcon('qq')}
-                <span className="text-sm">QQ: {person.qq}</span>
+                <span className="text-sm">{person.qq}</span>
               </div>
+              {person.wechat && (
+                <div className="flex items-center space-x-3">
+                  {getIcon('wechat')}
+                  <span className="text-sm">{person.wechat}</span>
+                </div>
+              )}
             </CardContent>
           </Card>
           
@@ -280,7 +320,7 @@ export default function PersonDetailPage() {
                 <CardTitle className="text-lg">社交链接</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {person.socialLinks.map((link, index) => (
+                {person.socialLinks.map((link: { title: string; url: string; icon?: string }, index: number) => (
                   <div key={index}>
                     <Button
                       variant="ghost"

@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useFilter } from '@/contexts/filter-context'
 import { 
   Card, 
   CardContent, 
@@ -17,7 +18,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ExternalLink, Search, Eye } from 'lucide-react'
+import { Search, Eye } from 'lucide-react'
 import { 
   teachers, 
   getAvatarUrl, 
@@ -26,10 +27,15 @@ import {
 } from '@/data/mock-data'
 
 export default function TeachersPage() {
-  const [selectedSchool, setSelectedSchool] = useState<string>('all')
-  const [searchQuery, setSearchQuery] = useState<string>('')
+  const { filterState, updateTeachersFilter } = useFilter()
+  const { selectedSchool, searchQuery } = filterState.teachers
   
   const schools = getSchools()
+  
+  // 页面加载时恢复状态
+  useEffect(() => {
+    // 状态已经通过Context和URL参数自动恢复，无需额外操作
+  }, [])
   
   // 筛选老师数据
   const filteredTeachers = useMemo(() => {
@@ -58,7 +64,7 @@ export default function TeachersPage() {
         
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           {/* 学校筛选 */}
-          <Select value={selectedSchool} onValueChange={setSelectedSchool}>
+          <Select value={selectedSchool} onValueChange={(value: string) => updateTeachersFilter({ selectedSchool: value })}>
             <SelectTrigger className="w-full sm:w-[200px]">
               <SelectValue placeholder="选择学校" />
             </SelectTrigger>
@@ -78,7 +84,7 @@ export default function TeachersPage() {
             <Input
               placeholder="搜索姓名或签名"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => updateTeachersFilter({ searchQuery: e.target.value })}
               className="pl-8"
             />
           </div>

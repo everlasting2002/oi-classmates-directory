@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useFilter } from '@/contexts/filter-context'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,8 +15,13 @@ import { Trophy, Medal, Award as AwardIcon, Calendar } from 'lucide-react'
 import { awards, students, getAwardsByTimeline, Award } from '@/data/mock-data'
 
 export default function AwardsPage() {
-  const [selectedYear, setSelectedYear] = useState<string>('all')
-  const [selectedLevel, setSelectedLevel] = useState<string>('all')
+  const { filterState, updateAwardsFilter } = useFilter()
+  const { selectedYear, selectedLevel } = filterState.awards
+  
+  // 页面加载时恢复状态
+  useEffect(() => {
+    // 状态已经通过Context和URL参数自动恢复，无需额外操作
+  }, [])
   
   // 获取年份列表
   const years = useMemo(() => {
@@ -24,10 +30,7 @@ export default function AwardsPage() {
   }, [])
   
   // 获取奖项等级列表
-  const levels = useMemo(() => {
-    const levelSet = new Set(awards.map(award => award.level))
-    return Array.from(levelSet)
-  }, [])
+  const levels = ['金牌', '银牌', '铜牌']
   
   // 获取时间轴数据
   const timelineData = useMemo(() => {
@@ -45,10 +48,19 @@ export default function AwardsPage() {
       filteredTimeline[year] = {}
       Object.keys(timeline[year]).forEach(season => {
         const seasonAwards = timeline[year][season].filter(award => {
-          if (selectedLevel !== 'all' && award.level !== selectedLevel) {
-            return false
+          if (selectedLevel === 'all') return true
+          
+          // 检查该奖项是否有对应等级的获奖者
+          switch (selectedLevel) {
+            case '金牌':
+              return award.students.gold.length > 0
+            case '银牌':
+              return award.students.silver.length > 0
+            case '铜牌':
+              return award.students.bronze.length > 0
+            default:
+              return true
           }
-          return true
         })
         
         if (seasonAwards.length > 0) {
@@ -72,12 +84,22 @@ export default function AwardsPage() {
     )
     
     const totalAwards = allAwards.length
-    const totalStudents = new Set(allAwards.flatMap(award => award.students)).size
-    const goldCount = allAwards.filter(award => award.level === '金牌').length
-    const silverCount = allAwards.filter(award => award.level === '银牌').length
-    const bronzeCount = allAwards.filter(award => award.level === '铜牌').length
+    const allStudents = new Set<number>()
+    let goldCount = 0
+    let silverCount = 0
+    let bronzeCount = 0
     
-    return { totalAwards, totalStudents, goldCount, silverCount, bronzeCount }
+    allAwards.forEach(award => {
+      award.students.gold.forEach(id => allStudents.add(id))
+      award.students.silver.forEach(id => allStudents.add(id))
+      award.students.bronze.forEach(id => allStudents.add(id))
+      
+      if (award.students.gold.length > 0) goldCount++
+      if (award.students.silver.length > 0) silverCount++
+      if (award.students.bronze.length > 0) bronzeCount++
+    })
+    
+    return { totalAwards, totalStudents: allStudents.size, goldCount, silverCount, bronzeCount }
   }, [timelineData])
   
   // 获取学生姓名
@@ -92,28 +114,25 @@ export default function AwardsPage() {
       case '金牌': return 'bg-yellow-500'
       case '银牌': return 'bg-gray-400'
       case '铜牌': return 'bg-amber-600'
-      case '一等奖': return 'bg-red-500'
-      case '二等奖': return 'bg-blue-500'
-      case '三等奖': return 'bg-green-500'
       default: return 'bg-gray-500'
     }
   }
   
   // 获取奖项图标
   const getLevelIcon = (level: string) => {
-    if (level.includes('金') || level === '一等奖') return <Trophy className="w-4 h-4" />
-    if (level.includes('银') || level === '二等奖') return <Medal className="w-4 h-4" />
+    if (level === '金牌') return <Trophy className="w-4 h-4" />
+    if (level === '银牌') return <Medal className="w-4 h-4" />
     return <AwardIcon className="w-4 h-4" />
   }
   
   // 获取赛季颜色
   const getSeasonColor = (season: string) => {
     switch (season) {
-      case 'NOIP': return 'bg-blue-100 text-blue-800'
+      case 'WC': return 'bg-indigo-100 text-indigo-800'
+      case 'CTSC': return 'bg-cyan-100 text-cyan-800'
       case 'APIO': return 'bg-green-100 text-green-800'
       case 'NOI': return 'bg-purple-100 text-purple-800'
       case 'IOI': return 'bg-red-100 text-red-800'
-      case 'ICPC': return 'bg-orange-100 text-orange-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
@@ -122,11 +141,14 @@ export default function AwardsPage() {
     <div className="space-y-6">
       {/* 页面标题和筛选 */}
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-white p-4 rounded-lg shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-800">获奖信息时间轴</h2>
+        <div>
+          <h2 className="text-xl font-semibold text-gray-800">获奖信息时间轴</h2>
+          <p className="text-xs text-gray-500 mt-1">并未展示全部获奖人数，仅包含记录在此网站的同学</p>
+        </div>
         
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           {/* 年份筛选 */}
-          <Select value={selectedYear} onValueChange={setSelectedYear}>
+          <Select value={selectedYear} onValueChange={(value: string) => updateAwardsFilter({ selectedYear: value })}>
             <SelectTrigger className="w-full sm:w-[150px]">
               <SelectValue placeholder="选择年份" />
             </SelectTrigger>
@@ -141,7 +163,7 @@ export default function AwardsPage() {
           </Select>
           
           {/* 奖项等级筛选 */}
-          <Select value={selectedLevel} onValueChange={setSelectedLevel}>
+          <Select value={selectedLevel} onValueChange={(value: string) => updateAwardsFilter({ selectedLevel: value })}>
             <SelectTrigger className="w-full sm:w-[150px]">
               <SelectValue placeholder="选择等级" />
             </SelectTrigger>
@@ -162,7 +184,7 @@ export default function AwardsPage() {
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-blue-600">{stats.totalAwards}</div>
-            <div className="text-sm text-gray-500">总获奖数</div>
+            <div className="text-sm text-gray-500">总比赛数</div>
           </CardContent>
         </Card>
         
@@ -176,21 +198,21 @@ export default function AwardsPage() {
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-yellow-600">{stats.goldCount}</div>
-            <div className="text-sm text-gray-500">金牌数</div>
+            <div className="text-sm text-gray-500">金牌数量</div>
           </CardContent>
         </Card>
         
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-gray-600">{stats.silverCount}</div>
-            <div className="text-sm text-gray-500">银牌数</div>
+            <div className="text-sm text-gray-500">银牌数量</div>
           </CardContent>
         </Card>
         
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-amber-600">{stats.bronzeCount}</div>
-            <div className="text-sm text-gray-500">铜牌数</div>
+            <div className="text-sm text-gray-500">铜牌数量</div>
           </CardContent>
         </Card>
       </div>
@@ -209,6 +231,7 @@ export default function AwardsPage() {
               getLevelColor={getLevelColor}
               getLevelIcon={getLevelIcon}
               getSeasonColor={getSeasonColor}
+              selectedLevel={selectedLevel}
             />
           ))}
       </div>
@@ -230,7 +253,8 @@ function TimelineYear({
   getStudentName, 
   getLevelColor, 
   getLevelIcon,
-  getSeasonColor 
+  getSeasonColor,
+  selectedLevel
 }: { 
   year: number
   yearData: { [season: string]: Award[] }
@@ -238,9 +262,10 @@ function TimelineYear({
   getLevelColor: (level: string) => string
   getLevelIcon: (level: string) => JSX.Element
   getSeasonColor: (season: string) => string
+  selectedLevel: string
 }) {
-  // 按赛季顺序排序
-  const seasonOrder = ['NOIP', 'APIO', 'NOI', 'IOI', 'ICPC', '其他']
+  // 按赛季顺序排序 - 使用与awards-data.ts相同的排序逻辑
+  const seasonOrder = ['WC', 'CTSC', 'APIO', 'NOI', 'IOI']
   const sortedSeasons = Object.keys(yearData).sort((a, b) => {
     const indexA = seasonOrder.indexOf(a)
     const indexB = seasonOrder.indexOf(b)
@@ -269,39 +294,90 @@ function TimelineYear({
               </div>
               
               {/* 该赛季的获奖记录 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-4">
+              <div className="space-y-4 ml-4">
                 {yearData[season].map(award => (
                   <Card key={award.id} className="border-l-4 border-l-blue-400">
                     <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-sm">{award.competition}</h4>
-                        <Badge className={`text-white ${getLevelColor(award.level)}`}>
-                          <span className="mr-1">{getLevelIcon(award.level)}</span>
-                          {award.level}
-                        </Badge>
+                      <div className="mb-3">
+                        <h4 className="font-medium text-sm mb-2">{award.competition}</h4>
                       </div>
                       
-                      <div className="text-xs text-gray-500 mb-2">
-                        {award.date && `比赛时间: ${award.date}`}
-                      </div>
-                      
-                      <div>
-                        <div className="text-xs text-gray-600 mb-1">获奖同学:</div>
-                        <div className="flex flex-wrap gap-1">
-                          {award.students.map(studentId => (
-                            <Button
-                              key={studentId}
-                              variant="secondary"
-                              size="sm"
-                              className="h-6 px-2 text-xs hover:bg-blue-100"
-                              asChild
-                            >
-                              <Link to={`/person/student/${studentId}`}>
-                                {getStudentName(studentId)}
-                              </Link>
-                            </Button>
-                          ))}
-                        </div>
+                      {/* 金银铜牌分别显示 */}
+                      <div className="space-y-3">
+                        {/* 金牌 */}
+                        {award.students.gold.length > 0 && (selectedLevel === 'all' || selectedLevel === '金牌') && (
+                          <div className="flex items-start gap-3">
+                            <Badge className={`text-white ${getLevelColor('金牌')} shrink-0`}>
+                              <span className="mr-1">{getLevelIcon('金牌')}</span>
+                              金牌
+                            </Badge>
+                            <div className="flex flex-wrap gap-1">
+                              {award.students.gold.map(studentId => (
+                                <Button
+                                  key={studentId}
+                                  variant="secondary"
+                                  size="sm"
+                                  className="h-6 px-2 text-xs hover:bg-yellow-100"
+                                  asChild
+                                >
+                                  <Link to={`/person/student/${studentId}?from=awards`}>
+                                    {getStudentName(studentId)}
+                                  </Link>
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* 银牌 */}
+                        {award.students.silver.length > 0 && (selectedLevel === 'all' || selectedLevel === '银牌') && (
+                          <div className="flex items-start gap-3">
+                            <Badge className={`text-white ${getLevelColor('银牌')} shrink-0`}>
+                              <span className="mr-1">{getLevelIcon('银牌')}</span>
+                              银牌
+                            </Badge>
+                            <div className="flex flex-wrap gap-1">
+                              {award.students.silver.map(studentId => (
+                                <Button
+                                  key={studentId}
+                                  variant="secondary"
+                                  size="sm"
+                                  className="h-6 px-2 text-xs hover:bg-gray-100"
+                                  asChild
+                                >
+                                  <Link to={`/person/student/${studentId}?from=awards`}>
+                                    {getStudentName(studentId)}
+                                  </Link>
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* 铜牌 */}
+                        {award.students.bronze.length > 0 && (selectedLevel === 'all' || selectedLevel === '铜牌') && (
+                          <div className="flex items-start gap-3">
+                            <Badge className={`text-white ${getLevelColor('铜牌')} shrink-0`}>
+                              <span className="mr-1">{getLevelIcon('铜牌')}</span>
+                              铜牌
+                            </Badge>
+                            <div className="flex flex-wrap gap-1">
+                              {award.students.bronze.map(studentId => (
+                                <Button
+                                  key={studentId}
+                                  variant="secondary"
+                                  size="sm"
+                                  className="h-6 px-2 text-xs hover:bg-amber-100"
+                                  asChild
+                                >
+                                  <Link to={`/person/student/${studentId}?from=awards`}>
+                                    {getStudentName(studentId)}
+                                  </Link>
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
