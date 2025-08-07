@@ -449,8 +449,8 @@ export const awards: Award[] = [
     competition: 'NOI 2025',
     students: {
       gold: [],
-      silver: [67, 48],
-      bronze: [66, 76, 77, 75]
+      silver: [67, 48, 66],
+      bronze: [76, 77, 75]
     }
   },
   {
