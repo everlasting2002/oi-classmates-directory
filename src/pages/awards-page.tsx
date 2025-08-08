@@ -317,7 +317,7 @@ function TimelineYear({
                                   key={studentId}
                                   variant="secondary"
                                   size="sm"
-                                  className="h-6 px-2 text-xs hover:bg-yellow-100"
+                                  className="h-6 px-2 text-xs hover:bg-blue-100"
                                   asChild
                                 >
                                   <Link to={`/person/student/${studentId}?from=awards`}>
@@ -342,7 +342,7 @@ function TimelineYear({
                                   key={studentId}
                                   variant="secondary"
                                   size="sm"
-                                  className="h-6 px-2 text-xs hover:bg-gray-100"
+                                  className="h-6 px-2 text-xs hover:bg-blue-100"
                                   asChild
                                 >
                                   <Link to={`/person/student/${studentId}?from=awards`}>
@@ -367,7 +367,7 @@ function TimelineYear({
                                   key={studentId}
                                   variant="secondary"
                                   size="sm"
-                                  className="h-6 px-2 text-xs hover:bg-amber-100"
+                                  className="h-6 px-2 text-xs hover:bg-blue-100"
                                   asChild
                                 >
                                   <Link to={`/person/student/${studentId}?from=awards`}>
