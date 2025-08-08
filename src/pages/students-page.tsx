@@ -2,13 +2,6 @@ import { useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useFilter } from '@/contexts/filter-context'
 import { 
-  Card, 
-  CardContent, 
-  CardFooter, 
-  CardHeader 
-} from '@/components/ui/card'
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { 
   Select, 
   SelectContent, 
   SelectItem, 
@@ -16,12 +9,12 @@ import {
   SelectValue 
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Search, Eye } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { 
   getAvatarUrl, 
-  getUniversities 
+  getUniversities,
+  getAwardsByStudentId
 } from '@/data/mock-data'
 import { 
   students,
@@ -29,6 +22,7 @@ import {
   getCurrentGrade,
   Student 
 } from '@/data/students-data'
+import { FlipCard } from '@/components/flip-card'
 
 export default function StudentsPage() {
   const { filterState, updateStudentsFilter } = useFilter()
@@ -171,9 +165,29 @@ export default function StudentsPage() {
       
       {/* 学生卡片网格 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-        {filteredStudents.map(student => (
-          <StudentCard key={student.id} student={student} />
-        ))}
+        {filteredStudents.map(student => {
+          // 获取学生的获奖信息
+          const studentAwards = getAwardsByStudentId(student.id)
+          const awards = {
+            gold: studentAwards
+              .filter(award => award.students.gold.includes(student.id))
+              .map(award => ({ competition: award.competition, year: award.year })),
+            silver: studentAwards
+              .filter(award => award.students.silver.includes(student.id))
+              .map(award => ({ competition: award.competition, year: award.year })),
+            bronze: studentAwards
+              .filter(award => award.students.bronze.includes(student.id))
+              .map(award => ({ competition: award.competition, year: award.year }))
+          }
+          
+          return (
+            <FlipCard 
+              key={student.id} 
+              student={student} 
+              awards={awards.gold.length > 0 || awards.silver.length > 0 || awards.bronze.length > 0 ? awards : undefined}
+            />
+          )
+        })}
       </div>
       
       {/* 无结果提示 */}
@@ -186,56 +200,3 @@ export default function StudentsPage() {
   )
 }
 
-// 学生卡片组件
-function StudentCard({ student }: { student: Student }) {
-  return (
-    <Card className="overflow-hidden hover:shadow-md transition-all duration-200 flex flex-col h-full card-interactive fast-click">
-      <CardHeader className="pb-3 p-4">
-        <div className="flex items-center space-x-3">
-          <Avatar className="h-12 w-12 md:h-14 md:w-14 border-2 border-blue-100">
-            <AvatarImage src={getAvatarUrl(student.qq)} alt={student.realName} />
-            <AvatarFallback className="text-sm font-medium">{student.realName.slice(0, 2)}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-sm md:text-base truncate">
-              {student.realName}
-              {student.nickname && student.nickname !== student.realName && (
-                <span className="text-xs md:text-sm text-gray-500 ml-1 block md:inline">({student.nickname})</span>
-              )}
-            </h3>
-            <Badge variant="outline" className="text-xs mt-1">
-              {getCurrentGrade(student.graduationYear) || `${student.graduationYear} 届`}
-            </Badge>
-          </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="flex-1 p-4 pt-0">
-        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">{student.signature}</p>
-        {student.university && (
-          <p className="text-xs text-gray-500 mt-2 truncate">
-            就读于: {student.university}
-          </p>
-        )}
-      </CardContent>
-      
-      <CardFooter className="flex justify-between items-center pt-3 border-t mt-auto p-4">
-        <div className="text-xs text-gray-500 truncate flex-1 mr-2">
-          QQ: {student.qq}
-        </div>
-        
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-9 px-3 text-xs md:text-sm shrink-0 touch-manipulation"
-          asChild
-        >
-          <Link to={`/person/student/${student.id}`}>
-            <Eye className="h-3 w-3 mr-1" />
-            详情
-          </Link>
-        </Button>
-      </CardFooter>
-    </Card>
-  )
-}
