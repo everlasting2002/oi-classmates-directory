@@ -945,12 +945,13 @@ export const students: Student[] = [
     realName: "孙雪晖",
     nickname: "zidaneandmessi",
     graduationYear: 2016,
-    signature: "咦我爱死机构爱死机构我价格加瓦儿歌",
-    university: "上海交通大学",
-    description: "咦我爱死机构爱死机构我价格加瓦儿歌",
+    signature: "假球，全是假球",
+    university: "齐齐哈尔大学",
+    description: "魔法炮",
     socialLinks: [
       { title: "博客", url: "https://zidaneandmessi.github.io/", icon: "globe" },
       { title: "GitHub", url: "zidaneandmessi", icon: "github" },
+      { title: "GitHub", url: "nachovy", icon: "github" },
       { title: "B站", url: "https://space.bilibili.com/7929890", icon: "video" }
     ]
   }
