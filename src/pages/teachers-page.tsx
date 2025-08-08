@@ -59,13 +59,24 @@ export default function TeachersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-white p-4 rounded-lg shadow-sm">
+      <div className="flex flex-col gap-4 bg-white p-4 rounded-lg shadow-sm">
         <h2 className="text-xl font-semibold text-gray-800">老师列表</h2>
         
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+        <div className="flex flex-col gap-3 w-full">
+          {/* 搜索框 - 移动端优先显示 */}
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              placeholder="搜索姓名或签名"
+              value={searchQuery}
+              onChange={(e) => updateTeachersFilter({ searchQuery: e.target.value })}
+              className="pl-10 h-10"
+            />
+          </div>
+          
           {/* 学校筛选 */}
           <Select value={selectedSchool} onValueChange={(value: string) => updateTeachersFilter({ selectedSchool: value })}>
-            <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectTrigger className="w-full sm:w-[200px] h-10">
               <SelectValue placeholder="选择学校" />
             </SelectTrigger>
             <SelectContent>
@@ -77,17 +88,6 @@ export default function TeachersPage() {
               ))}
             </SelectContent>
           </Select>
-          
-          {/* 搜索框 */}
-          <div className="relative w-full sm:w-[200px]">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-            <Input
-              placeholder="搜索姓名或签名"
-              value={searchQuery}
-              onChange={(e) => updateTeachersFilter({ searchQuery: e.target.value })}
-              className="pl-8"
-            />
-          </div>
         </div>
       </div>
       
@@ -97,7 +97,7 @@ export default function TeachersPage() {
       </div>
       
       {/* 老师卡片网格 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
         {filteredTeachers.map(teacher => (
           <TeacherCard key={teacher.id} teacher={teacher} />
         ))}
@@ -116,43 +116,43 @@ export default function TeachersPage() {
 // 老师卡片组件
 function TeacherCard({ teacher }: { teacher: Teacher }) {
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-shadow flex flex-col h-full">
-      <CardHeader className="pb-2">
-        <div className="flex items-center space-x-4">
-          <Avatar className="h-12 w-12 border-2 border-green-100">
+    <Card className="overflow-hidden hover:shadow-md transition-all duration-200 flex flex-col h-full card-interactive fast-click">
+      <CardHeader className="pb-3 p-4">
+        <div className="flex items-center space-x-3">
+          <Avatar className="h-12 w-12 md:h-14 md:w-14 border-2 border-green-100">
             <AvatarImage src={getAvatarUrl(teacher.qq)} alt={teacher.realName} />
-            <AvatarFallback>{teacher.realName.slice(0, 2)}</AvatarFallback>
+            <AvatarFallback className="text-sm font-medium">{teacher.realName.slice(0, 2)}</AvatarFallback>
           </Avatar>
-          <div>
-            <h3 className="font-medium">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-medium text-sm md:text-base truncate">
               {teacher.realName}
               {teacher.nickname && teacher.nickname !== teacher.realName && (
-                <span className="text-sm text-gray-500 ml-1">({teacher.nickname})</span>
+                <span className="text-xs md:text-sm text-gray-500 ml-1 block md:inline">({teacher.nickname})</span>
               )}
             </h3>
-            <Badge variant="outline" className="text-xs bg-green-50">
+            <Badge variant="outline" className="text-xs bg-green-50 mt-1">
               {teacher.title}
             </Badge>
           </div>
         </div>
       </CardHeader>
       
-      <CardContent className="flex-1">
-        <p className="text-sm text-gray-600 line-clamp-2">{teacher.signature}</p>
-        <p className="text-xs text-gray-500 mt-2">
+      <CardContent className="flex-1 p-4 pt-0">
+        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">{teacher.signature}</p>
+        <p className="text-xs text-gray-500 mt-2 truncate">
           任教于: {teacher.school}
         </p>
       </CardContent>
       
-      <CardFooter className="flex justify-between items-center pt-2 border-t mt-auto">
-        <div className="text-xs text-gray-500">
+      <CardFooter className="flex justify-between items-center pt-3 border-t mt-auto p-4">
+        <div className="text-xs text-gray-500 truncate flex-1 mr-2">
           QQ: {teacher.qq}
         </div>
         
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-8 px-2 text-xs"
+          className="h-9 px-3 text-xs md:text-sm shrink-0 touch-manipulation"
           asChild
         >
           <Link to={`/person/teacher/${teacher.id}`}>

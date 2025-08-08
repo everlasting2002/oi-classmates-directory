@@ -46,13 +46,13 @@ function PersonPhoto({ photoPath, personName }: { photoPath: string; personName:
   
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center space-x-2">
-          <Camera className="w-5 h-5" />
+      <CardHeader className="p-4 md:p-6">
+        <CardTitle className="text-base md:text-lg flex items-center space-x-2">
+          <Camera className="w-4 h-4 md:w-5 md:h-5" />
           <span>个人照片</span>
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 md:p-6 pt-0">
         <div className="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden">
           <img
             src={photoPath}
@@ -168,12 +168,13 @@ export default function PersonDetailPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
       {/* 返回按钮 */}
       <Button 
         variant="ghost" 
         asChild
-        className="mb-4"
+        className="mb-2 md:mb-4 touch-manipulation"
+        size="sm"
       >
         <Link to={getReturnUrl(returnInfo.page as 'students' | 'teachers' | 'awards')}>
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -183,9 +184,9 @@ export default function PersonDetailPage() {
       
       {/* 基本信息卡片 */}
       <Card>
-        <CardHeader>
-          <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
-            <Avatar className="h-24 w-24 border-4 border-blue-100">
+        <CardHeader className="p-4 md:p-6">
+          <div className="flex flex-col gap-4 items-center text-center sm:flex-row sm:gap-6 sm:items-start sm:text-left">
+            <Avatar className="h-20 w-20 md:h-24 md:w-24 border-4 border-blue-100 shrink-0">
               <AvatarImage 
                 src={person.avatar || getAvatarUrl(person.qq)} 
                 alt={person.realName} 
@@ -195,36 +196,36 @@ export default function PersonDetailPage() {
               </AvatarFallback>
             </Avatar>
             
-            <div className="flex-1">
-              <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
-                <h1 className="text-2xl font-bold">{person.realName}</h1>
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                <h1 className="text-xl md:text-2xl font-bold truncate">{person.realName}</h1>
                 {person.nickname && person.nickname !== person.realName && (
-                  <Badge variant="secondary" className="text-sm">
+                  <Badge variant="secondary" className="text-sm w-fit mx-auto sm:mx-0">
                     {person.nickname}
                   </Badge>
                 )}
               </div>
               
-              <p className="text-gray-600 mb-3">{person.signature}</p>
+              <p className="text-gray-600 mb-3 text-sm md:text-base leading-relaxed">{person.signature}</p>
               
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                 {isStudent ? (
                   <>
-                    <Badge variant="outline">
+                    <Badge variant="outline" className="text-xs md:text-sm">
                       {(person as Student).graduationYear} 届
                     </Badge>
                     {(person as Student).university && (
-                      <Badge variant="outline" className="bg-blue-50">
+                      <Badge variant="outline" className="bg-blue-50 text-xs md:text-sm">
                         {(person as Student).university}
                       </Badge>
                     )}
                   </>
                 ) : (
                   <>
-                    <Badge variant="outline" className="bg-green-50">
+                    <Badge variant="outline" className="bg-green-50 text-xs md:text-sm">
                       {(person as Teacher).title}
                     </Badge>
-                    <Badge variant="outline" className="bg-purple-50">
+                    <Badge variant="outline" className="bg-purple-50 text-xs md:text-sm">
                       {(person as Teacher).school}
                     </Badge>
                   </>
@@ -236,15 +237,15 @@ export default function PersonDetailPage() {
       </Card>
       
       {/* 详细信息 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* 个人描述 */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 md:space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle>个人简介</CardTitle>
+            <CardHeader className="p-4 md:p-6">
+              <CardTitle className="text-lg md:text-xl">个人简介</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-gray-700 leading-relaxed">
+            <CardContent className="p-4 md:p-6 pt-0">
+              <p className="text-gray-700 leading-relaxed text-sm md:text-base">
                 {person.description || '暂无个人简介'}
               </p>
             </CardContent>
@@ -253,14 +254,14 @@ export default function PersonDetailPage() {
           {/* 获奖信息（仅学生显示） */}
           {isStudent && personAwards.length > 0 && (
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+              <CardHeader className="p-4 md:p-6">
+                <CardTitle className="flex items-center space-x-2 text-lg md:text-xl">
                   <Trophy className="w-5 h-5 text-yellow-600" />
                   <span>获奖记录</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="p-4 md:p-6 pt-0">
+                <div className="space-y-3 md:space-y-4">
                   {personAwards
                     .sort((a, b) => b.year - a.year)
                     .map(award => {
@@ -268,12 +269,12 @@ export default function PersonDetailPage() {
                       if (!level) return null
                       
                       return (
-                        <div key={award.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div>
-                            <h4 className="font-medium text-sm">{award.competition}</h4>
-                            <p className="text-xs text-gray-500">{award.year} 年 · {award.season}</p>
+                        <div key={award.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 bg-gray-50 rounded-lg">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-sm md:text-base truncate">{award.competition}</h4>
+                            <p className="text-xs md:text-sm text-gray-500">{award.year} 年 · {award.season}</p>
                           </div>
-                          <Badge className={`text-white ${getLevelColor(level)}`}>
+                          <Badge className={`text-white ${getLevelColor(level)} w-fit shrink-0`}>
                             <span className="mr-1">{getLevelIcon(level)}</span>
                             {level}
                           </Badge>
@@ -287,7 +288,7 @@ export default function PersonDetailPage() {
         </div>
         
         {/* 右侧区域：照片和联系方式 */}
-        <div className="space-y-4">
+        <div className="space-y-4 lg:space-y-4">
           {/* 个人照片 - 单张显示 */}
           <PersonPhoto 
             photoPath={`/photos/${isStudent ? 'students' : 'teachers'}/${person.id}-1.jpg`}
@@ -296,18 +297,18 @@ export default function PersonDetailPage() {
           
           {/* 联系方式 */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">联系方式</CardTitle>
+            <CardHeader className="p-4 md:p-6">
+              <CardTitle className="text-base md:text-lg">联系方式</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="p-4 md:p-6 pt-0 space-y-3">
               <div className="flex items-center space-x-3">
                 {getIcon('qq')}
-                <span className="text-sm">{person.qq}</span>
+                <span className="text-sm md:text-base">{person.qq}</span>
               </div>
               {person.wechat && (
                 <div className="flex items-center space-x-3">
                   {getIcon('wechat')}
-                  <span className="text-sm">{person.wechat}</span>
+                  <span className="text-sm md:text-base">{person.wechat}</span>
                 </div>
               )}
             </CardContent>
@@ -316,22 +317,22 @@ export default function PersonDetailPage() {
           {/* 社交链接 */}
           {person.socialLinks && person.socialLinks.length > 0 && (
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">社交链接</CardTitle>
+              <CardHeader className="p-4 md:p-6">
+                <CardTitle className="text-base md:text-lg">社交链接</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="p-4 md:p-6 pt-0 space-y-3">
                 {person.socialLinks.map((link: { title: string; url: string; icon?: string }, index: number) => (
                   <div key={index}>
                     <Button
                       variant="ghost"
-                      className="w-full justify-start p-2 h-auto"
+                      className="w-full justify-start p-3 h-auto touch-manipulation"
                       onClick={() => window.open(link.url, '_blank')}
                     >
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-3 w-full">
                         {getIcon(link.icon || 'globe')}
-                        <div className="text-left">
-                          <div className="font-medium text-sm">{link.title}</div>
-                          <div className="text-xs text-gray-500 truncate max-w-[150px]">
+                        <div className="text-left flex-1 min-w-0">
+                          <div className="font-medium text-sm md:text-base truncate">{link.title}</div>
+                          <div className="text-xs md:text-sm text-gray-500 truncate">
                             {link.url}
                           </div>
                         </div>

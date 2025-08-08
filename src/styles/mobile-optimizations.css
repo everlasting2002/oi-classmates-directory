@@ -1,0 +1,136 @@
+/* 移动端优化样式 */
+
+/* 触摸目标最小尺寸 */
+@media (max-width: 768px) {
+  /* 确保所有可点击元素至少44px高度 */
+  button, 
+  [role="button"], 
+  a, 
+  input, 
+  select,
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* 输入框优化 */
+  input, 
+  textarea, 
+  select {
+    font-size: 16px; /* 防止iOS缩放 */
+  }
+  
+  /* 卡片点击反馈 */
+  .card-interactive {
+    transition: transform 0.1s ease-out, box-shadow 0.2s ease-out;
+  }
+  
+  .card-interactive:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* 按钮点击反馈 */
+  .btn-touch {
+    transition: transform 0.1s ease-out, background-color 0.2s ease-out;
+  }
+  
+  .btn-touch:active {
+    transform: scale(0.95);
+  }
+  
+  /* 滚动优化 */
+  .scroll-smooth {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* 防止文本选择（在某些交互元素上） */
+  .no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* 优化点击延迟 */
+  .fast-click {
+    touch-action: manipulation;
+  }
+  
+  /* 隐藏滚动条但保持功能 */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* 加载动画 */
+@keyframes pulse-gentle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.loading-pulse {
+  animation: pulse-gentle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 滑入动画 */
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-up {
+  animation: slide-in-up 0.3s ease-out;
+}
+
+/* 渐入动画 */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+/* 弹性动画 */
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
