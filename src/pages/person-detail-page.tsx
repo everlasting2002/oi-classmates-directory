@@ -30,19 +30,55 @@ import {
 } from 'simple-icons'
 import { students, teachers, awards, getAvatarUrl, Student, Teacher } from '@/data/mock-data'
 import { getStudentAwardLevel } from '@/data/awards-data'
+import { preloadPhoto, getStudentPhotoPath, getTeacherPhotoPath } from '@/utils/photo-utils'
 
 // 个人照片组件
-function PersonPhoto({ photoPath, personName }: { photoPath: string; personName: string }) {
+function PersonPhoto({ personId, personName, isStudent }: { 
+  personId: number; 
+  personName: string; 
+  isStudent: boolean 
+}) {
   const [hasPhoto, setHasPhoto] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   
   useEffect(() => {
-    const img = new Image()
-    img.onload = () => setHasPhoto(true)
-    img.onerror = () => setHasPhoto(false)
-    img.src = photoPath
-  }, [photoPath])
+    const checkPhoto = async () => {
+      setIsLoading(true)
+      const photoPath = isStudent 
+        ? getStudentPhotoPath(personId)
+        : getTeacherPhotoPath(personId)
+      
+      const exists = await preloadPhoto(photoPath)
+      setHasPhoto(exists)
+      setIsLoading(false)
+    }
+    
+    checkPhoto()
+  }, [personId, isStudent])
+  
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader className="p-4 md:p-6">
+          <CardTitle className="text-base md:text-lg flex items-center space-x-2">
+            <Camera className="w-4 h-4 md:w-5 md:h-5" />
+            <span>个人照片</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 md:p-6 pt-0">
+          <div className="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+            <div className="text-gray-500 text-sm">加载中...</div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
   
   if (!hasPhoto) return null
+  
+  const photoPath = isStudent 
+    ? getStudentPhotoPath(personId)
+    : getTeacherPhotoPath(personId)
   
   return (
     <Card>
@@ -291,8 +327,9 @@ export default function PersonDetailPage() {
         <div className="space-y-4 lg:space-y-4">
           {/* 个人照片 - 单张显示 */}
           <PersonPhoto 
-            photoPath={`/photos/${isStudent ? 'students' : 'teachers'}/${person.id}-1.jpg`}
+            personId={person.id}
             personName={person.realName}
+            isStudent={isStudent}
           />
           
           {/* 联系方式 */}
