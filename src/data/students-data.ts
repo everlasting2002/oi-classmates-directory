@@ -950,8 +950,8 @@ export const students: Student[] = [
     description: "魔法炮",
     socialLinks: [
       { title: "博客", url: "https://zidaneandmessi.github.io/", icon: "globe" },
-      { title: "GitHub", url: "zidaneandmessi", icon: "github" },
-      { title: "GitHub", url: "nachovy", icon: "github" },
+      { title: "GitHub", url: "https://github.com/zidaneandmessi", icon: "github" },
+      { title: "GitHub", url: "https://github.com/nachovy", icon: "github" },
       { title: "B站", url: "https://space.bilibili.com/7929890", icon: "video" }
     ]
   }
