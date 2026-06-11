@@ -352,11 +352,11 @@ export const students: Student[] = [
     graduationYear: 2020,
     signature: "这世上，无论多么短暂的瞬间，都有意义",
     university: "哈尔滨工业大学",
-    description: "英才学院专业，这世上，无论多么短暂的瞬间，都有意义",
+    description: "计算机科学与技术，这世上，无论多么短暂的瞬间，都有意义",
     socialLinks: [
-      { title: "博客", url: "https://blogmb.com/", icon: "globe" },
+      { title: "主页", url: "https://michael-li-bryant.github.io/", icon: "globe" },
       { title: "知乎", url: "https://www.zhihu.com/people/michael-bryant-34", icon: "book" },
-      { title: "B站", url: "https://space.bilibili.com/20040279", icon: "video" }
+      { title: "Github", url: "https://github.com/Michael-Li-Bryant", icon: "github" }
     ]
   },
   {
