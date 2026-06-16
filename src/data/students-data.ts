@@ -837,8 +837,13 @@ export const students: Student[] = [
     realName: "栗铭远",
     nickname: "bdfs_then_csdn",
     graduationYear: 2025,
-    signature: "暂无签名",
-    description: "算法竞赛爱好者"
+    signature: "deer god",
+    university: "吉林大学",
+    description: "deer god",
+    socialLinks: [
+      { title: "知乎", url: "https://www.zhihu.com/people/creature-of-the-", icon: "book" },
+      { title: "B站", url: "https://space.bilibili.com/593445757", icon: "video" }
+    ]
   },
   {
     id: 69,
