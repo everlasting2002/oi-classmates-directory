@@ -954,6 +954,21 @@ export const students: Student[] = [
       { title: "GitHub", url: "https://github.com/nachovy", icon: "github" },
       { title: "B站", url: "https://space.bilibili.com/7929890", icon: "video" }
     ]
+  },
+  {
+    id: 80,
+    qq: "1947343700",
+    realName: "曲冠衡",
+    nickname: "Unk1ndled",
+    graduationYear: 2023,
+    signature: "dsfz202013，但是accoders又上不去了",
+    university: "云南大学",
+    description: "Ciallo～(∠・ω< )⌒★",
+    socialLinks: [
+      { title: "GitHub", url: "https://github.com/Unk1ndledAC", icon: "github" },
+      { title: "B站", url: "https://space.bilibili.com/2049457736", icon: "video" },
+      
+    ]
   }
 ];
 
